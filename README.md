@@ -136,3 +136,7 @@ Pembersihan bercak default menjaga beberapa subjek dan tepi transparan halus. Mo
 Logo orisinal tersedia di `public/brand/fileflow-icon.svg` dan `public/brand/fileflow-logo.svg`; ikon digunakan di header/footer dan favicon. Arsip source juga menyertakan aset publik ini.
 
 Perbaikan diverifikasi dengan tes alpha, pembersihan komponen, komposisi transparansi, serta build produksi. Lingkungan ini tidak menyediakan browser QA; inferensi model pada dua foto yang dilampirkan belum dijalankan di sini. Coba ulang kedua foto setelah deployment terbaru aktif dan periksa rambut, jari, serta tepian pakaian dengan latar pratinjau berbeda.
+
+## Deployment Vercel Hobby dan identitas commit
+
+Untuk repository privat pada Vercel Hobby, author commit yang memicu deployment harus dikenali sebagai pemilik proyek Vercel. Hubungkan akun GitHub pemilik repository melalui pengaturan akun Vercel. Commit melalui GitHub menggunakan identitas akun terautentikasi; hindari identitas generik seperti `FileFlow` untuk commit deployment. Perubahan author pada commit baru tidak mengubah author commit lama. Jika commit sudah menggunakan akun pemilik tetapi masih diblokir, periksa koneksi GitHub pada akun Vercel yang memiliki proyek.
