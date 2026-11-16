@@ -1,0 +1,30 @@
+{
+  "name": "fileflow",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "node --test tests/*.test.js",
+    "prebuild": "node scripts/package-source.mjs"
+  },
+  "dependencies": {
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "lucide-react": "^0.468.0",
+    "pdf-lib": "^1.17.1",
+    "pdfjs-dist": "^4.10.38",
+    "docx": "^9.5.1",
+    "fflate": "^0.8.2",
+    "tesseract.js": "^6.0.1",
+    "@imgly/background-removal": "^1.7.0",
+    "busboy": "^1.6.0"
+  },
+  "devDependencies": {
+    "vite": "^6.3.5",
+    "@vitejs/plugin-react": "^4.4.1"
+  },
+  "license": "AGPL-3.0-only"
+}
