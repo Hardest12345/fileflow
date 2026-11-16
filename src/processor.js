@@ -25,10 +25,10 @@ async function render(page,scale=1.5){const view=page.getViewport({scale});if(vi
 async function makeWord(texts,name){const {Document,Packer,Paragraph,TextRun}=await import('docx');const doc=new Document({sections:texts.map(text=>({children:text.split('\n').map(line=>new Paragraph({children:[new TextRun(line)]}))}))});return result(await Packer.toBlob(doc),name,'application/vnd.openxmlformats-officedocument.wordprocessingml.document');}
 export async function processFiles(id,files,o,progress=()=>{}){
  const name=baseName(files[0].name), outputs=[];progress('Menyiapkan file…');
- if(id==='zip'){const entries={};files.forEach((f,i)=>entries[`${i+1}-${f.name}`]=null);await Promise.all(files.map(async(f,i)=>entries[`${i+1}-${f.name}`]=await bytes(f)));return [result(zipSync(entries,{level:9}),'fileflow-arsip.zip','application/zip')];}
+ if(id==='zip'){const entries={};files.forEach((f,i)=>entries[`${i+1}-${f.name}`]=null);await Promise.all(files.map(async(f,i)=>entries[`${i+1}-${f.name}`]=await bytes(f)));return [result(zipSync(entries,{level:9}),'hestfile-arsip.zip','application/zip')];}
  if(['compress-image','image-convert','resize'].includes(id)){
  for(const [i,f] of files.entries()){progress(`Memproses gambar ${i+1}/${files.length}…`);const format=id==='compress-image'?(f.type==='image/png'?'png':f.type==='image/webp'?'webp':'jpg'):o.format;const b=await imageOutput(f,{...o,format,width:id==='resize'?o.width:undefined});
- outputs.push(id==='compress-image'&&b.size>=f.size?{...result(f,f.name,f.type),info:'File asli dipertahankan karena hasil kompresi lebih besar.'}:result(b,`${baseName(f.name)}-fileflow.${format}`));}return outputs;}
+ outputs.push(id==='compress-image'&&b.size>=f.size?{...result(f,f.name,f.type),info:'File asli dipertahankan karena hasil kompresi lebih besar.'}:result(b,`${baseName(f.name)}-hestfile.${format}`));}return outputs;}
  if(id==='remove-bg'){const {removeImageBackground}=await import('./background-removal.js');const b=await removeImageBackground(files[0],o,progress);return [result(b,`${name}-tanpa-background.png`,'image/png')];}
  if(id==='office'){
  const body=new FormData();body.append('file',files[0]);progress('Mengonversi di server Office…');const res=await fetch('/api/office',{method:'POST',headers:{'X-Office-Key':o.accessKey||''},body});
@@ -43,7 +43,7 @@ export async function processFiles(id,files,o,progress=()=>{}){
  const out=zipSync(entries,{level:9});return [out.length<files[0].size?result(out,`${name}-compressed.${files[0].name.split('.').pop()}`,files[0].type):{...result(files[0],files[0].name,files[0].type),info:'Dokumen sudah optimal; file asli dipertahankan.'}];
  }
  if(id==='image-pdf'){
- const doc=await PDFDocument.create();for(const f of files){const b=await imageOutput(f,{quality:92,format:'jpg'});const img=await doc.embedJpg(await b.arrayBuffer());const page=doc.addPage([595.28,841.89]);const d=img.scaleToFit(547.28,793.89);page.drawImage(img,{x:(page.getWidth()-d.width)/2,y:(page.getHeight()-d.height)/2,...d});}return [result(await doc.save(),'fileflow-gambar.pdf')];
+ const doc=await PDFDocument.create();for(const f of files){const b=await imageOutput(f,{quality:92,format:'jpg'});const img=await doc.embedJpg(await b.arrayBuffer());const page=doc.addPage([595.28,841.89]);const d=img.scaleToFit(547.28,793.89);page.drawImage(img,{x:(page.getWidth()-d.width)/2,y:(page.getHeight()-d.height)/2,...d});}return [result(await doc.save(),'hestfile-gambar.pdf')];
  }
  if(['compress-pdf','pdf-image','ocr','pdf-word'].includes(id)){
  const pdf=await openPdf(files[0]);let worker;try{
@@ -63,11 +63,11 @@ export async function processFiles(id,files,o,progress=()=>{}){
  }finally{if(worker)await worker.terminate();await pdf.destroy();}
  }
  if(id==='merge'){
- if(files.length<2)throw new Error('Pilih minimal dua PDF untuk digabungkan.');const doc=await PDFDocument.create();for(const f of files){const source=await PDFDocument.load(await bytes(f));const pages=await doc.copyPages(source,source.getPageIndices());pages.forEach(p=>doc.addPage(p));}return [result(await doc.save(),'fileflow-gabungan.pdf')];
+ if(files.length<2)throw new Error('Pilih minimal dua PDF untuk digabungkan.');const doc=await PDFDocument.create();for(const f of files){const source=await PDFDocument.load(await bytes(f));const pages=await doc.copyPages(source,source.getPageIndices());pages.forEach(p=>doc.addPage(p));}return [result(await doc.save(),'hestfile-gabungan.pdf')];
  }
  const doc=await PDFDocument.load(await bytes(files[0]));
  if(id==='split'){const selection=parsePages(o.pages,doc.getPageCount());const target=await PDFDocument.create();(await target.copyPages(doc,selection)).forEach(p=>target.addPage(p));return [result(await target.save(),`${name}-halaman.pdf`)];}
  if(id==='rotate'){for(const p of doc.getPages())p.setRotation(degrees((p.getRotation().angle+Number(o.angle))%360));}
  if(id==='watermark'){if(!o.watermark.trim())throw new Error('Isi teks watermark terlebih dahulu.');const font=await doc.embedFont(StandardFonts.Helvetica);try{font.encodeText(o.watermark);}catch{throw new Error('Watermark mendukung karakter Latin. Gunakan teks tanpa emoji.');}for(const p of doc.getPages()){const fontSize=Math.min(42,(p.getWidth()-40)/font.widthOfTextAtSize(o.watermark,1));p.drawText(o.watermark,{x:20,y:p.getHeight()/2,size:fontSize,font,color:rgb(.35,.4,.38),opacity:.3});}}
- return [result(await doc.save(),`${name}-fileflow.pdf`)];
+ return [result(await doc.save(),`${name}-hestfile.pdf`)];
 }

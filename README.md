@@ -1,4 +1,6 @@
-# FileFlow
+# HestFile
+
+**Hest** berasal dari “Hardest”; **File** mewakili file yang dikelola.
 
 Website React berbahasa Indonesia untuk pekerjaan file sehari-hari. Desain mandiri, terinspirasi cakupan alat 11zon. Kode siap diimpor ke workspace dan Vercel; tidak membutuhkan Supabase atau database.
 
@@ -6,7 +8,7 @@ Website React berbahasa Indonesia untuk pekerjaan file sehari-hari. Desain mandi
 
 Prasyarat: Node.js 22 LTS atau lebih baru, npm, browser modern (Chrome/Edge/Firefox terbaru). Node 24 juga didukung.
 
-1. Ekstrak ZIP dan buka folder `fileflow` di VS Code / workspace.
+1. Ekstrak ZIP dan buka folder `hestfile` di VS Code / workspace.
 2. Jalankan:
 
 ```bash
@@ -38,12 +40,12 @@ Alternatif melalui CLI: dari direktori proyek jalankan `npx vercel`, lalu `npx v
 
 ## Word / PPT / Excel ke PDF: server Gotenberg
 
-LibreOffice tidak cocok dijalankan sebagai binary besar dalam Vercel Function. Paket ini menyertakan proxy `/api/office.js` menuju Gotenberg 8 yang kamu host di layanan container / VPS. Gotenberg memproses file sementara; kode FileFlow tidak menulis file ke disk atau database.
+LibreOffice tidak cocok dijalankan sebagai binary besar dalam Vercel Function. Paket ini menyertakan proxy `/api/office.js` menuju Gotenberg 8 yang kamu host di layanan container / VPS. Gotenberg memproses file sementara; kode HestFile tidak menulis file ke disk atau database.
 
 Contoh di VPS dengan Docker, di belakang reverse proxy HTTPS:
 
 ```bash
-docker run -d --name fileflow-gotenberg --restart unless-stopped \
+docker run -d --name hestfile-gotenberg --restart unless-stopped \
   -p 127.0.0.1:3000:3000 gotenberg/gotenberg:8 \
   gotenberg --api-timeout=45s --libreoffice-disable-routes=false \
   --chromium-disable-routes=true
@@ -55,7 +57,7 @@ Isi Vercel → Settings → Environment Variables (atau `.env.local` untuk `verc
 
 ```dotenv
 GOTENBERG_URL=https://office.domainmu.com
-GOTENBERG_USERNAME=fileflow
+GOTENBERG_USERNAME=hestfile
 GOTENBERG_PASSWORD=kata-sandi-reverse-proxy-yang-kuat
 OFFICE_ACCESS_KEY=kunci-acak-panjang-yang-berbeda
 ```
@@ -107,7 +109,7 @@ src/processor.js      Pemrosesan PDF/gambar/OCR/ZIP
 src/utils.js          Rentang halaman dan validasi file
 src/background-removal.js  Normalisasi foto, segmentasi, komposisi PNG
 src/background-mask.js     Pembersihan mask dan komposisi alpha
-public/brand/              Logo SVG dan favicon FileFlow
+public/brand/              Logo SVG dan favicon HestFile
 scripts/patch-imgly.mjs    Perbaikan saturasi alpha IMG.LY 1.7.0
 src/style.css         Desain responsif
 api/office.js         Proxy Office Vercel
@@ -133,10 +135,10 @@ Detail tinggi memakai model isnet FP32 (sekitar 176 MB); mode Seimbang memakai F
 
 Pembersihan bercak default menjaga beberapa subjek dan tepi transparan halus. Mode “Hanya subjek terbesar” menghapus komponen terpisah selain yang terbesar; jangan gunakan untuk banyak orang atau objek yang terpisah. Kedua mode tidak menjamin menghapus sisa latar yang menyatu dengan subjek. Pratinjau putih/gelap/checker hanya memengaruhi tampilan; unduhan tetap PNG transparan pada dimensi asli.
 
-Logo orisinal tersedia di `public/brand/fileflow-icon.svg` dan `public/brand/fileflow-logo.svg`; ikon digunakan di header/footer dan favicon. Arsip source juga menyertakan aset publik ini.
+Logo orisinal tersedia di `public/brand/hestfile-icon.svg` dan `public/brand/hestfile-logo.svg`; ikon digunakan di header/footer dan favicon. Arsip source juga menyertakan aset publik ini.
 
 Perbaikan diverifikasi dengan tes alpha, pembersihan komponen, komposisi transparansi, serta build produksi. Lingkungan ini tidak menyediakan browser QA; inferensi model pada dua foto yang dilampirkan belum dijalankan di sini. Coba ulang kedua foto setelah deployment terbaru aktif dan periksa rambut, jari, serta tepian pakaian dengan latar pratinjau berbeda.
 
 ## Deployment Vercel Hobby dan identitas commit
 
-Untuk repository privat pada Vercel Hobby, author commit yang memicu deployment harus dikenali sebagai pemilik proyek Vercel. Hubungkan akun GitHub pemilik repository melalui pengaturan akun Vercel. Commit melalui GitHub menggunakan identitas akun terautentikasi; hindari identitas generik seperti `FileFlow` untuk commit deployment. Perubahan author pada commit baru tidak mengubah author commit lama. Jika commit sudah menggunakan akun pemilik tetapi masih diblokir, periksa koneksi GitHub pada akun Vercel yang memiliki proyek.
+Untuk repository privat pada Vercel Hobby, author commit yang memicu deployment harus dikenali sebagai pemilik proyek Vercel. Hubungkan akun GitHub pemilik repository melalui pengaturan akun Vercel. Commit melalui GitHub menggunakan identitas akun terautentikasi; hindari identitas generik seperti `HestFile` untuk commit deployment. Perubahan author pada commit baru tidak mengubah author commit lama. Jika commit sudah menggunakan akun pemilik tetapi masih diblokir, periksa koneksi GitHub pada akun Vercel yang memiliki proyek.
