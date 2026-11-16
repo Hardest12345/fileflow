@@ -29,7 +29,7 @@ export async function processFiles(id,files,o,progress=()=>{}){
  if(['compress-image','image-convert','resize'].includes(id)){
  for(const [i,f] of files.entries()){progress(`Memproses gambar ${i+1}/${files.length}…`);const format=id==='compress-image'?(f.type==='image/png'?'png':f.type==='image/webp'?'webp':'jpg'):o.format;const b=await imageOutput(f,{...o,format,width:id==='resize'?o.width:undefined});
  outputs.push(id==='compress-image'&&b.size>=f.size?{...result(f,f.name,f.type),info:'File asli dipertahankan karena hasil kompresi lebih besar.'}:result(b,`${baseName(f.name)}-fileflow.${format}`));}return outputs;}
- if(id==='remove-bg'){progress('Mengunduh / memuat model AI…');const {removeBackground}=await import('@imgly/background-removal');const b=await removeBackground(files[0],{device:'cpu',model:'isnet_quint8',progress:(key,current,total)=>progress(`Model AI: ${total?Math.round(current/total*100):0}% · ${key.startsWith('fetch')?'mengunduh':'memproses'}`)});return [result(b,`${name}-tanpa-background.png`,'image/png')];}
+ if(id==='remove-bg'){const {removeImageBackground}=await import('./background-removal.js');const b=await removeImageBackground(files[0],o,progress);return [result(b,`${name}-tanpa-background.png`,'image/png')];}
  if(id==='office'){
  const body=new FormData();body.append('file',files[0]);progress('Mengonversi di server Office…');const res=await fetch('/api/office',{method:'POST',headers:{'X-Office-Key':o.accessKey||''},body});
  if(!res.ok){const err=await res.json().catch(()=>({error:'Layanan Office tidak tersedia. Jalankan melalui Vercel atau vercel dev.'}));throw new Error(err.error);}

@@ -71,7 +71,7 @@ File Office melewati infrastruktur Vercel dan Gotenberg. Retensi infrastruktur/l
 | Kompres PDF | Render halaman sebagai JPEG, kemas PDF baru. Teks pilihan, vektor, tautan, metadata, form, dan aksesibilitas tidak dipertahankan. Maks. 150 halaman. File asli dikembalikan jika hasil lebih besar. |
 | Kompres gambar | Canvas JPEG/WebP dengan kualitas pilihan; PNG encode ulang tanpa kehilangan kualitas. Tidak menjamin ukuran lebih kecil. |
 | Gabung PDF | PDF-lib, urutan file dapat diubah; minimal 2 file. |
-| Hapus background | IMG.LY isnet_quint8 di browser. Unduh model besar saat pertama digunakan, perlu internet dan memori memadai. |
+| Hapus background | IMG.LY isnet FP32 (Detail tinggi) / FP16 (Seimbang) di browser. Patch alpha mencegah nilai prediksi negatif berubah menjadi bercak pekat. Pembersihan bercak kecil / subjek terbesar, pratinjau latar transparan-putih-gelap; maks. 24 megapiksel. Model besar memerlukan internet dan memori memadai. |
 | Word/PPT/Excel ke PDF | Gotenberg via API Vercel; perlu konfigurasi; maksimal 4 MB. |
 | OCR PDF ke Word | Tesseract Indonesia + Inggris pada setiap halaman; keluaran DOCX berisi teks per halaman, bukan tata letak asli; maks. 30 halaman. |
 | PDF ke Word | Ekstrak teks digital via PDF.js ke DOCX; gunakan OCR untuk scan. Maks. 150 halaman. |
@@ -105,6 +105,10 @@ src/main.jsx          UI, dialog, validasi interaksi, unduhan
 src/catalog.js        Daftar alat dan keterangan
 src/processor.js      Pemrosesan PDF/gambar/OCR/ZIP
 src/utils.js          Rentang halaman dan validasi file
+src/background-removal.js  Normalisasi foto, segmentasi, komposisi PNG
+src/background-mask.js     Pembersihan mask dan komposisi alpha
+public/brand/              Logo SVG dan favicon FileFlow
+scripts/patch-imgly.mjs    Perbaikan saturasi alpha IMG.LY 1.7.0
 src/style.css         Desain responsif
 api/office.js         Proxy Office Vercel
 scripts/package-source.mjs  Arsip source yang disajikan di footer
@@ -120,3 +124,15 @@ Build produksi dan tes otomatis dijalankan di Node 24. Tes meliputi gabung/ekstr
 ## Lisensi
 
 AGPL-3.0-only karena integrasi IMG.LY background removal. Lihat `LICENSE` dan `THIRD_PARTY_NOTICES.md`. Build menyertakan tautan unduh kode sumber di footer. Pertahankan ketersediaan source yang sesuai saat menghosting versi AGPL beserta modifikasinya. Jika ingin distribusi tertutup, tinjau lisensi komersial IMG.LY atau ganti mesin hapus background.
+
+## Peningkatan hapus background
+
+Versi IMG.LY 1.7.0 dikunci karena menyertakan patch lokal di `scripts/patch-imgly.mjs`. Konversi mask aslinya menggunakan `Uint8Array`, sehingga nilai prediksi negatif atau di atas satu dapat membungkus ke rentang alpha yang salah. Patch menggantinya dengan `Uint8ClampedArray` pada modul ESM dan CJS. Patch dijalankan saat `npm ci`/`npm install` dan sebelum build; jika versi dependency berubah, script berhenti agar patch ditinjau. Tes mengeksekusi fungsi konversi dari dependency terpasang pada nilai negatif, di atas satu, dan NaN.
+
+Detail tinggi memakai model isnet FP32 (sekitar 176 MB); mode Seimbang memakai FP16 (sekitar 88 MB). Angka tersebut perkiraan model, belum termasuk runtime WASM. Model dicache browser sesuai perilaku penyedia. Perangkat seluler dengan memori kecil disarankan memakai mode Seimbang. Tidak ada API berbayar baru dan tidak perlu `.env` untuk fitur ini.
+
+Pembersihan bercak default menjaga beberapa subjek dan tepi transparan halus. Mode “Hanya subjek terbesar” menghapus komponen terpisah selain yang terbesar; jangan gunakan untuk banyak orang atau objek yang terpisah. Kedua mode tidak menjamin menghapus sisa latar yang menyatu dengan subjek. Pratinjau putih/gelap/checker hanya memengaruhi tampilan; unduhan tetap PNG transparan pada dimensi asli.
+
+Logo orisinal tersedia di `public/brand/fileflow-icon.svg` dan `public/brand/fileflow-logo.svg`; ikon digunakan di header/footer dan favicon. Arsip source juga menyertakan aset publik ini.
+
+Perbaikan diverifikasi dengan tes alpha, pembersihan komponen, komposisi transparansi, serta build produksi. Lingkungan ini tidak menyediakan browser QA; inferensi model pada dua foto yang dilampirkan belum dijalankan di sini. Coba ulang kedua foto setelah deployment terbaru aktif dan periksa rambut, jari, serta tepian pakaian dengan latar pratinjau berbeda.
